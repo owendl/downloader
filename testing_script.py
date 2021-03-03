@@ -75,16 +75,20 @@ browser.get(login_page)
 time.sleep(1)
 browser.find_element_by_name(user_field).send_keys(keyring.get_password("system", "username"))
 browser.find_element_by_name(pw_field).send_keys(keyring.get_password("system", "password"))
-browser.find_element_by_class_name("button").click()
+browser.find_element_by_name(pw_field).send_keys(Keys.ENTER)
+
+#%%
 time.sleep(1)
 browser.get(bundle)
 time.sleep(1)
 
+#Either method works here
 # l=browser.find_elements_by_partial_link_text("Download")
-l=browser.find_elements_by_class_name("button game_download_btn")
+lb=browser.find_elements_by_class_name("game_download_btn")
+
 
 links = []
-for lis in l:
+for lis in lb:
     links.append(lis.get_attribute('href'))
     
 #%%
