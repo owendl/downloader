@@ -19,14 +19,52 @@ user_field = "username"
 pw_field = "password"
 
 login_page = "https://itch.io/login"
-purchases = "https://itch.io/my-purchases"
-bundle = "https://itch.io/bundle/download/BDbUvWXI1oh6ovQoKoNJ2jP2qnWEhcUI_AOGtoR3"
+downloads_page = "https://itch.io/bundle/download/BDbUvWXI1oh6ovQoKoNJ2jP2qnWEhcUI_AOGtoR3"
 #%%
 
 def prep_folder(folder):
     if not os.path.isdir(folder):
         os.mkdir(folder)
-    
+
+def download_links(links, browser):
+#Either method works here
+    l=browser.find_elements_by_partial_link_text("Download")
+    # lb=browser.find_elements_by_class_name("game_download_btn")
+    for lis in l:
+        result=lis.get_attribute('href')
+        if result:
+            links.append(result)
+    return links
+
+def try_downloads(browser, link):
+    '''
+    function that calls itself to try and download items that might be nested in a page
+
+    Parameters
+    ----------
+    browser : TYPE
+        DESCRIPTION.
+    link : string
+        one of the links found by download_links
+
+    Returns
+    -------
+    None.
+
+    '''
+
+ef download_name(broswer):
+    '''
+    tries to get the name of the downloads
+
+    Returns
+    -------
+    a string to call the download title
+
+    '''
+    download_title=browser.find_element_by_class_name("object_title-1").get_attribute('innerHTML').replace("/","")
+    return download_title
+
 prep_folder(download_folder)
     
 prep_folder(move_to)
@@ -79,18 +117,13 @@ browser.find_element_by_name(pw_field).send_keys(Keys.ENTER)
 
 #%%
 time.sleep(1)
-browser.get(bundle)
+browser.get(downloads_page)
 time.sleep(1)
 
-#Either method works here
-# l=browser.find_elements_by_partial_link_text("Download")
-lb=browser.find_elements_by_class_name("game_download_btn")
 
+#%%
 
-links = []
-for lis in lb:
-    links.append(lis.get_attribute('href'))
-    
+links=download_links([], browser)
 #%%
 
 next_flag=False
@@ -103,21 +136,19 @@ except:
 while next_flag:
     next_btn.click()
     time.sleep(2)
-    l=browser.find_elements_by_partial_link_text("Download")
-    for lis in l:
-        links.append(lis.get_attribute('href'))
+    links =  download_links(links, browser)
     
     try:
         next_btn = browser.find_element_by_partial_link_text("Next")
     except:
         next_flag = False
 
-
+#%%
 for game_link in links:    
     browser.get(game_link)
     time.sleep(1)
     
-    game_title=browser.find_element_by_class_name("object_title").get_attribute('innerHTML').replace("/","")
+    game_title=browser.find_element_by_class_name("object_title-1").get_attribute('innerHTML').replace("/","")
     print(game_title)
     d=browser.find_elements_by_link_text("Download")
     d_len=len(d)
@@ -127,7 +158,7 @@ for game_link in links:
         # print(download.get_attribute('innerHTML'))
         print(download.get_attribute('data-upload_id'))
     
-        download.click()
+        # download.click()
         time.sleep(1)
     
     rpg_files = os.listdir(download_folder)
